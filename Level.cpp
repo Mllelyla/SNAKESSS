@@ -24,7 +24,7 @@ float Level::getMsBetweenMovement() //getter
 
 float Level::calcMsBetweenMovement()
 {
-	return 150 - pow(.9, mNumber);
+	return 150 - pow(.95, mNumber);
 	//return 200 - (40 * (mNumber - 1));
 }
 

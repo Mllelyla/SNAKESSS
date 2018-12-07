@@ -9,7 +9,7 @@ Game::Game()
 	mCurrentSlice{},
 	mSnakePoisonFreeze{ false },
 	mFreezePoisonSlice{},
-	mFreezeCountDown{ 10 }
+	mFreezeCountDown{5 }
 {
 }
 
@@ -56,13 +56,13 @@ void Game::setFreezeSnakePoison(Snake &theSnake) {
 	else if (!theSnake.snakePoisoned())
 		mSnakePoisonFreeze = false;
 
-	if (mSnakePoisonFreeze && mFreezePoisonSlice < 10) {
+	if (mSnakePoisonFreeze && mFreezePoisonSlice < 5) {
 		mFreezeCountDown--;
 		mFreezePoisonSlice++;
 	}
 	else {
 		mFreezePoisonSlice = 0;
-		mFreezeCountDown = 10;
+		mFreezeCountDown = 5;
 		theSnake.setSnakePoisoned(false);
 	}
 

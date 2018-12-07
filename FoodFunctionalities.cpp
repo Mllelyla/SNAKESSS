@@ -50,8 +50,8 @@ Position FoodFunctionalities::newRandomFoodPosition(Snake theSnake) {
 
 	PrintBackground pbg;
 
-	int xrand = rand() % (pbg.gameWidth() - 2) + pbg.gameX();
-	int yrand = rand() % (pbg.gameHeight() - 2) + pbg.gameY();
+	int xrand = rand() % (pbg.gameWidth() - 5) + pbg.gameX()+3;
+	int yrand = rand() % (pbg.gameHeight() - 5) + pbg.gameY()+3;
 
 	bool coordsValides = false;
 	bool toutEstBeau = true;
@@ -63,14 +63,17 @@ Position FoodFunctionalities::newRandomFoodPosition(Snake theSnake) {
 			if (theSnake.snakeBody().at(i).x() == xrand && theSnake.snakeBody().at(i).y() == yrand)
 			{
 				toutEstBeau = false;
-				int xrand = rand() % (pbg.gameWidth() - 2) + pbg.gameX();
-				int yrand = rand() % (pbg.gameHeight() - 2) + pbg.gameY();
-
+				xrand = rand() % (pbg.gameWidth() - 5) + pbg.gameX() + 3;
+				yrand = rand() % (pbg.gameHeight() - 5) + pbg.gameY() + 3;
 			}
 		}
+		
 		if (toutEstBeau)
-		{
 			coordsValides = true;
+		else {
+			xrand = rand() % (pbg.gameWidth() - 5) + pbg.gameX() + 3;
+			yrand = rand() % (pbg.gameHeight() - 5) + pbg.gameY() + 3;
+			toutEstBeau = true;
 		}
 	}
 
@@ -85,11 +88,8 @@ void FoodFunctionalities::snakeEatFood(Snake &theSnake, Food &theFoodTouched) {
 
 		if (theFoodTouched.type()=="POISON")
 			theSnake.setSnakePoisoned(true);
-		if (theFoodTouched.type() == "NORMAL") //test
-			theSnake.setSnakePoisoned(false);
-
+		
 		newRandomFoodStyle(theFoodTouched);  //piger une sorte de Food aleatoire
-
 		theFoodTouched.setPosition(newRandomFoodPosition(theSnake));  //changer la position
 
 }
