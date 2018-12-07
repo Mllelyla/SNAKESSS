@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "Position.h"
-#include "Modifier.h"
+#include "Direction.h"
 #include "ConsoleColor.h"
 class Snake
 {
@@ -27,11 +27,11 @@ public:
 	void setSpeed(int speed);
 	void setDirection(int direction);
 	void setSymbol(char symbol);
-	void addToHead(Modifier modifier);
+	void addToHead(Direction theDirection);
 	void removeFromTail();
 	bool touchesItself();
 
-	bool snakePoisoned();
+	bool snakeFrozen();
 	void setSnakePoisoned(bool poisoned);
 
 	bool outOfBounds();

@@ -50,8 +50,8 @@ void PrintBackground::setOnGame(ConsoleImage &Background, Food theFood,Food theF
 	Background.drawPoint(size_t(2), size_t(25), theFood2.symbol(), theFood2.color());
 	Background.drawText(size_t(4), size_t(25), " = 3 points ", ConsoleColor::ty);
 	Background.drawText(size_t(4), size_t(28), "   + POISON ", ConsoleColor::ty);
-	Background.drawText(size_t(1), size_t(30), "", ConsoleColor::ty);
-	Background.drawText(size_t(1), size_t(32), "", ConsoleColor::ty);
+	Background.drawText(size_t(1), size_t(30), "POISON = INPUTS", ConsoleColor::ty);
+	Background.drawText(size_t(1), size_t(32), "TEMPORARY FROZEN", ConsoleColor::ty);
 
 	//draw Ctlr info
 	Background.drawText(size_t(55), size_t(20), "UP = W ", ConsoleColor::ty);

@@ -1,6 +1,7 @@
 
 #include "Level.h"
 #include "Snake.h"
+#include "ElapsedTimer.h"
 
 class Game
 {
@@ -12,12 +13,18 @@ public:
 	int getScore();
 	void addScore(int points);
 	void changeLevel();
-
-	//void setSpeedSnake(Snake &theSnake);
+	int getCurrentSlice();
+	bool resetTime();
+	void setFreezeSnakePoison(Snake &theSnake);
+	bool getSnakePoisonFreeze();
+	int getFreezePoisonSlice();
 
 private:
 	Level mCurrentLevel;
 	bool mStarted;
 	int mScore;
-	//bool mSnakePoisonSpeed{ false };
+	bool mResetTime;
+	int mCurrentSlice;
+	bool mSnakePoisonFreeze{ false };
+	int mFreezePoisonSlice;
 };

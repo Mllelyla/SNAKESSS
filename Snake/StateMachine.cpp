@@ -1,7 +1,7 @@
 #include "StateMachine.h"
 #include "State.h"
 #include <iostream>
-#include "Modifier.h"
+#include "Direction.h"
 #include "Snake.h"
 #include "Game.h"
 #include "Food.h"
@@ -75,27 +75,26 @@ int start(Console& console, StateMachine& machine)
 
 int onGame(Console& console, StateMachine& machine)
 {
-	//initialisation des instances d'objets  ...a faire dans Game ?
-	Modifier leMod;
-	leMod.setRight(); //direction par defaut au debut
+	//initialisation des instances d'objets  
+	Direction theDirection;
+	theDirection.setRight(); //direction par defaut au debut
 	Snake theSnake;
+	ElapsedTimer <> leTimer;
 	FoodFunctionalities foodFunctions;
 	Food theFood, theFood2;
 	PrintImage printImage;
-	ElapsedTimer<> leTimer;
 	PrintBackground printbG;
 	Game currentGame;
 	int score;
 	int currentlevel;
 
 	bool started = false;
-	int currentSlice{};
+	//int currentSlice{};
+	leTimer.start();
 	currentGame.setCurrentLevel(1);  // + que les niveaux avancent, plus le serpent va vite
-
 	int levelTimeUpdateInMs = currentGame.CurrentLevel().calcMsBetweenMovement();
 
 	bool gameEnd = false;
-	leTimer.start();
 	started = true;
 
 	theSnake.newSnake(ConsoleColor::tc, char(219), Position(30, 30), 4); //position de depart 
@@ -115,62 +114,70 @@ int onGame(Console& console, StateMachine& machine)
 
 	ConsoleImage &Image{ writer.createImage("Image") };  //creation d'une image vide
 	/////////////////////////////////////////////////////////
+
+
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+	reader.installFilter(new ConsoleKeyFilterUp);
+
 	while (!gameEnd)
 	{
-		//updates score/level
-		score = currentGame.getScore();
-		currentlevel = currentGame.CurrentLevel().levelNumber();
+		//si le snake est empoisonné, tu peux pas utiliser les commandes !!!!
 
-		//regarde si on doit augmenter la vitesse : si on change de niveau ou si le serpent est empoisonné ( augmente vitesse temporairement)
-		//currentGame.setSpeedSnake(theSnake);
-		levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
+		if (!currentGame.getSnakePoisonFreeze()) {  
+			reader.read(keyEvents);  //vecteur de keyEvents
+			for (auto event : keyEvents)
+			{
 
+				switch (event.keyV())
+				{
+				case 'W': theDirection.setUp();    break;
+				case 'A': theDirection.setLeft();  break;
+				case 'S': theDirection.setDown();  break;
+				case 'D': theDirection.setRight(); break;
+				}
+			}
+
+		}
 		//print background + nouvelles Images
 		writer.push("Background", "Image"); //met le background dans l'image vide / ecrase l'image si elle existe deja
 		printImage.drawAll(theSnake, theFood, theFood2, Image); //rajoute le visuel de tes objets sur l'image
 		printImage.drawStats(theSnake, score, currentlevel, Image); //visuel du score/level
 		writer.push("Image"); //affiche nouvelle image + background
 
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-		reader.installFilter(new ConsoleKeyFilterUp);
-		reader.read(keyEvents);  //vecteur de keyEvents
-								 //if (started == false && keyEvents.size() != 0)
-								 //{ 
-								 //
-								 //
-								 //}
-		for (auto event : keyEvents)
+
+		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentGame.getCurrentSlice())
 		{
-
-			switch (event.keyV())
-			{
-			case 'W': leMod.setUp();    break;
-			case 'A': leMod.setLeft();  break;
-			case 'S': leMod.setDown();  break;
-			case 'D': leMod.setRight(); break;
-			}
-		}
-
-
-		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentSlice) //test Pause
-		{
+			//updates score/level
+			score = currentGame.getScore();
+			currentlevel = currentGame.CurrentLevel().levelNumber();
+		
 			gameEnd = theSnake.isDead();
 
-			theSnake.addToHead(leMod); //mouvement du serpent
+			theSnake.addToHead(theDirection); //mouvement du serpent
 
 			if (!foodFunctions.snakeTouchingFood(theSnake, theFood, theFood2) ) {
 					theSnake.removeFromTail();
 				}
-				else {
-						Food * foodTouched = foodFunctions.FoodEaten();
-						foodFunctions.snakeEatFood(theSnake, (*foodTouched));
-						currentGame.addScore(foodFunctions.pointsByTypeFood());
-						Beep(880,100);  //SON !!
-						currentGame.changeLevel();
-				}
-				++currentSlice; //Changer pour des slices, et la slice est définie par le niveau
+			else {
+					Food * foodTouched = foodFunctions.FoodEaten();
+					foodFunctions.snakeEatFood(theSnake, (*foodTouched));
+					currentGame.addScore(foodFunctions.pointsByTypeFood());
+					Beep(880,100);  //SON !!
 			}
+
+			//++currentSlice; //Changer pour des slices, et la slice est définie par le 
+
+			
+			currentGame.setFreezeSnakePoison(theSnake); //regarde si le serpent doit freezer pcq empoisonné
+
+			levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
+
+			currentGame.changeLevel();
+
+			if (currentGame.resetTime()) //si empoisonné ou change de niveau
+				leTimer.restart();
+		}
 	}
 
 	//return INDEX_GAMEOVER; //TEST

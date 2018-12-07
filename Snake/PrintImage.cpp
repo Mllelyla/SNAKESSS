@@ -18,12 +18,12 @@ void PrintImage::drawSnake(Snake theSnake, ConsoleImage &Image)
 {
 	//serpent tourne vert et "pseudo flash" s'il est empoisonné
 	ConsoleColor colorTemp;
-	if (theSnake.snakePoisoned() && !mSnakeFlash) {
+	if (theSnake.snakeFrozen() && !mSnakeFlash) {
 		colorTemp = ConsoleColor::tG;
 		mSnakeFlash =  true ;
 	}
 	else
-		if (theSnake.snakePoisoned() && mSnakeFlash) {
+		if (theSnake.snakeFrozen() && mSnakeFlash) {
 			colorTemp = ConsoleColor::tg;
 			mSnakeFlash = false;
 	}
@@ -56,7 +56,7 @@ void PrintImage::drawStats( Snake &snake, int &score, int &currentlevel, Console
 	Image.drawText(size_t(40), size_t(9), "LEVEL = "+std::to_string(currentlevel), ConsoleColor::ty);
 
 	//state snake
-	if (snake.snakePoisoned())
+	if (snake.snakeFrozen())
 		snakestate= "POISONED"; 
 	else
 		snakestate= "NORMAL"; 
