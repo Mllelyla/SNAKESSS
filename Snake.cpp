@@ -24,7 +24,7 @@ int Snake::direction() { return mDirection; }
 char Snake::symbol() { return mSymbol; }
 std::vector<Position> Snake::snakeBody() { return mSnakeBody; }
 
-bool Snake::snakePoisonned() { return mSnakePoisoned; }
+bool Snake::snakePoisoned() { return mSnakePoisoned; }
 void Snake::setSpeed(int speed) { mSpeed = speed; }
 void  Snake::setColor(ConsoleColor color){mColor = color;};
 void  Snake::setState(bool state){mState = state;};
@@ -47,7 +47,7 @@ void Snake::newSnake(ConsoleColor color, char symbol, Position position, int len
 	//vider vecteur si pas vide
 	if (mSnakeBody.size() != 0)
 	{
-		mSnakeBody.clear(); 
+		mSnakeBody.clear(); //clear vector
 	}
 
 	//init les premiers points dans le vecteur / pour longueur de serpent x
@@ -57,26 +57,31 @@ void Snake::newSnake(ConsoleColor color, char symbol, Position position, int len
 	for (unsigned i = 0; i < length; i++) {
 		pos.setCoords(position.x() - i, position.y());
 		mSnakeBody.insert(mSnakeBody.begin(), pos);
+		//mSnakeBody.push_back(pos);
 	}
 
 }
 
 
-void Snake::addToHead(Direction theDirection)
+void Snake::addToHead(Direction direction)
 {
 	//ajouter a la fin du vecteur la nouvelle position de la tete
 	Position currentHead{ mSnakeBody[mSnakeBody.size() - 1] };    // garder en memoire la tete actuelle
 	Position newHead{};
 
 
-	newHead.setCoords(currentHead.x() + theDirection.DirectionX(), currentHead.y() + theDirection.DirectionY()); //nouvelle position de tete avec modificateur
+	newHead.setCoords(currentHead.x() + direction.DirectionX(), currentHead.y() + direction.DirectionY()); //nouvelle position de tete avec Directionficateur
+
+																							 //mSnakeBody.insert(mSnakeBody.end(), newHead); 
+																							 //mSnakeBody.push_back(newHead); //nouvelle tete a la fin du vecteur
 	mSnakeBody.insert(mSnakeBody.end(), newHead);
-	mCurrentHeadPos.setCoords(newHead.x(), newHead.y());
+	mCurrentHeadPos.setCoords(newHead.x(), newHead.y());//changer pour un setter
 }
 
 void Snake::removeFromTail()
 {
-	mSnakeBody.erase(mSnakeBody.begin()); 
+	mSnakeBody.erase(mSnakeBody.begin());  //
+										   //enleve debut du vecteur (la queue du serpent) pour simuler le mouvement
 }
 
 bool Snake::outOfBounds()

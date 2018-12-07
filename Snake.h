@@ -27,11 +27,11 @@ public:
 	void setSpeed(int speed);
 	void setDirection(int direction);
 	void setSymbol(char symbol);
-	void addToHead(Direction theDirection);
+	void addToHead(Direction Direction);
 	void removeFromTail();
 	bool touchesItself();
 
-	bool snakePoisonned();
+	bool snakePoisoned();
 	void setSnakePoisoned(bool poisoned);
 
 	bool outOfBounds();

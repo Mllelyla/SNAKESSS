@@ -35,13 +35,11 @@ int welcome(Console& console, StateMachine& machine)
 
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
-
 	PrintBackground printbG;
 	printbG.setWelcome(Background);
 
 	writer.push("Background");
 	///////////////////////////////////////////////////////
-
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
@@ -51,11 +49,11 @@ int welcome(Console& console, StateMachine& machine)
 		switch (event.keyA())
 		{
 		case 'o': return INDEX_OPTIONS;  break;
-
+		case 'O': return INDEX_OPTIONS;  break;
 		case 's': return INDEX_START;  break;
-
+		case 'S': return INDEX_START;  break;
 		case 'q': return INDEX_QUIT;  break;
-
+		case 'Q': return INDEX_QUIT;  break;
 		}
 	}
 	return INDEX_WELCOME;
@@ -63,39 +61,37 @@ int welcome(Console& console, StateMachine& machine)
 
 int exit(Console& console, StateMachine& machine)
 {
-	cout << "BLABLA" << endl;
 	return -1;
 }
 
 int start(Console& console, StateMachine& machine)
 {
-	cout << "ALLO";
 	return INDEX_ONGAME;
 }
 
 int onGame(Console& console, StateMachine& machine)
 {
-	//initialisation des instances d'objets  
-	Direction theDirection;
-	theDirection.setRight(); //direction par defaut au debut
+	//initialisation des instances d'objets  ...a faire dans Game ?
+	Direction leMod;
+	leMod.setRight(); //direction par defaut au debut
 	Snake theSnake;
-	ElapsedTimer <> leTimer;
 	FoodFunctionalities foodFunctions;
 	Food theFood, theFood2;
 	PrintImage printImage;
+	ElapsedTimer<> leTimer;
 	PrintBackground printbG;
 	Game currentGame;
 	int score;
 	int currentlevel;
-	int freezeCountDown;
 
 	bool started = false;
-	//int currentSlice{};
-	leTimer.start();
+	int currentSlice{};
 	currentGame.setCurrentLevel(1);  // + que les niveaux avancent, plus le serpent va vite
+
 	int levelTimeUpdateInMs = currentGame.CurrentLevel().calcMsBetweenMovement();
 
 	bool gameEnd = false;
+	leTimer.start();
 	started = true;
 
 	theSnake.newSnake(ConsoleColor::tc, char(219), Position(30, 30), 4); //position de depart 
@@ -109,247 +105,290 @@ int onGame(Console& console, StateMachine& machine)
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
 
-	printbG.setOnGame(Background, theFood,theFood2);
+	printbG.setOnGame(Background, theFood, theFood2);
 
 	writer.push("Background");
 
 	ConsoleImage &Image{ writer.createImage("Image") };  //creation d'une image vide
 	/////////////////////////////////////////////////////////
-
-
-	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-	ConsoleKeyReader::KeyEvents keyEvents;
-	reader.installFilter(new ConsoleKeyFilterUp);
-
 	while (!gameEnd)
 	{
-		//si le snake est empoisonné, tu peux pas utiliser les commandes !!!!
+		//updates score/level
+		score = currentGame.getScore();
+		currentlevel = currentGame.CurrentLevel().levelNumber();
 
-		if (!currentGame.getSnakePoisonFreeze()) {  
-			reader.read(keyEvents);  //vecteur de keyEvents
-			for (auto event : keyEvents)
-			{
+		//regarde si on doit augmenter la vitesse : si on change de niveau ou si le serpent est empoisonné ( augmente vitesse temporairement)
+		//currentGame.setSpeedSnake(theSnake);
+		levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
 
-				switch (event.keyV())
-				{
-				case 'W': theDirection.setUp();    break;
-				case 'A': theDirection.setLeft();  break;
-				case 'S': theDirection.setDown();  break;
-				case 'D': theDirection.setRight(); break;
-				}
-			}
-
-		}
 		//print background + nouvelles Images
 		writer.push("Background", "Image"); //met le background dans l'image vide / ecrase l'image si elle existe deja
 		printImage.drawAll(theSnake, theFood, theFood2, Image); //rajoute le visuel de tes objets sur l'image
-		printImage.drawStats(theSnake, score, currentlevel,freezeCountDown,Image); //visuel du score/level
+		printImage.drawStats(theSnake, score, currentlevel, Image); //visuel du score/level
 		writer.push("Image"); //affiche nouvelle image + background
 
-
-		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentGame.getCurrentSlice())
+		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+		ConsoleKeyReader::KeyEvents keyEvents;
+		reader.installFilter(new ConsoleKeyFilterUp);
+		reader.read(keyEvents);
+		for (auto event : keyEvents)
 		{
-			//updates score/level
-			score = currentGame.getScore();
-			currentlevel = currentGame.CurrentLevel().levelNumber();
-			freezeCountDown = currentGame.getFreezeCountDown();
-		
-			gameEnd = theSnake.isDead();
-
-			theSnake.addToHead(theDirection); //mouvement du serpent
-
-			if (!foodFunctions.snakeTouchingFood(theSnake, theFood, theFood2) ) {
-					theSnake.removeFromTail();
-				}
-			else {
-					Food * foodTouched = foodFunctions.FoodEaten();
-					foodFunctions.snakeEatFood(theSnake, (*foodTouched));
-					currentGame.addScore(foodFunctions.pointsByTypeFood());
-					Beep(880,100);  //SON !!
+			switch (event.keyV())
+			{
+			case 'W': leMod.setUp();    break;
+			case 'w': leMod.setUp();    break;
+			case 'A': leMod.setLeft();  break;
+			case 'a': leMod.setLeft();  break;
+			case 'S': leMod.setDown();  break;
+			case 's': leMod.setDown();  break;
+			case 'D': leMod.setRight(); break;
+			case 'd': leMod.setRight(); break;
 			}
+			if (GetAsyncKeyState(VK_ESCAPE))
+			{
 
-			//++currentSlice; //Changer pour des slices, et la slice est définie par le 
+				return INDEX_PAUSE;
+			}
+		}
 
-			
-			currentGame.setFreezeSnakePoison(theSnake); //regarde si le serpent doit freezer pcq empoisonné
 
-			levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
+		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentSlice) //test Pause
+		{
+			gameEnd = theSnake.isDead();
+			theSnake.addToHead(leMod); //mouvement du serpent
 
-			currentGame.changeLevel();
-
-			if (currentGame.resetTime()) //si empoisonné ou change de niveau
-				leTimer.restart();
+			if (!foodFunctions.snakeTouchingFood(theSnake, theFood, theFood2)) {
+				theSnake.removeFromTail();
+			}
+			else {
+				Food * foodTouched = foodFunctions.FoodEaten();
+				foodFunctions.snakeEatFood(theSnake, (*foodTouched));
+				currentGame.addScore(foodFunctions.pointsByTypeFood());
+				Beep(880, 100);  //SON !!
+				currentGame.changeLevel();
+			}
+			++currentSlice; //Changer pour des slices, et la slice est définie par le niveau
 		}
 	}
-
-	//return INDEX_GAMEOVER; //TEST
-	return INDEX_ONGAME;
+	return INDEX_GAMEOVER;
 }
 
-	int gameOver(Console& console, StateMachine& machine)
+int gameOver(Console& console, StateMachine& machine)
+{
+	////////////////////////////////////////////////////////
+	//FONCTION PRINTBACKGROUND
+
+	ConsoleWriter & writer{ Console::getInstance().writer() };
+	ConsoleImage & Background{ writer.createImage("Background") };
+
+	PrintBackground printbG;
+	printbG.setGameOver(Background);
+
+	writer.push("Background");
+	///////////////////////////////////////////////////////
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+	reader.installFilter(new ConsoleKeyFilterUp);
+	reader.read(keyEvents);
+	for (auto event : keyEvents)
 	{
-		////////////////////////////////////////////////////////
-		//FONCTION PRINTBACKGROUND
-
-		ConsoleWriter & writer{ Console::getInstance().writer() };
-		ConsoleImage & Background{ writer.createImage("Background") };
-
-		PrintBackground printbG;
-		printbG.setGameOver(Background);
-
-		writer.push("Background");
-		///////////////////////////////////////////////////////
-
-		return INDEX_QUIT;
-	}
-
-	int pause(Console& console, StateMachine& machine)
-	{
-		////////////////////////////////////////////////////////
-		//FONCTION PRINTBACKGROUND
-
-		ConsoleWriter & writer{ Console::getInstance().writer() };
-		ConsoleImage & Background{ writer.createImage("Background") };
-
-		PrintBackground printbG;
-		printbG.setPause(Background);
-
-		writer.push("Background");
-		///////////////////////////////////////////////////////
-
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-
-		reader.read(keyEvents);  //vecteur de keyEvents
-		for (auto event : keyEvents) {
-
-			switch (event.keyA())
-			{
-			case 'e': return INDEX_WELCOME;  break;
-
-			case 'q': return INDEX_QUIT;  break;
-
-			}
-		}
-		return INDEX_WELCOME;
-	}
-
-	int quit(Console& console, StateMachine& machine)
-	{
-		////////////////////////////////////////////////////////
-		//FONCTION PRINTBACKGROUND
-
-		ConsoleWriter & writer{ Console::getInstance().writer() };
-		ConsoleImage & Background{ writer.createImage("Background") };
-
-		PrintBackground printbG;
-		printbG.setGameOver(Background);
-
-		writer.push("Background");
-		///////////////////////////////////////////////////////
-
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-		reader.read(keyEvents);  //vecteur de keyEvents
-		for (auto event : keyEvents) {
-
-			switch (event.keyA())
-			{
-			case 'y': return INDEX_EXIT;;  break;
-
-			case 'w': return INDEX_WELCOME;  break;
-			}
-		}
-		return INDEX_QUIT;
-	}
-
-	int instructions(Console& console, StateMachine& machine)
-	{
-
-		////////////////////////////////////////////////////////
-		//FONCTION PRINTBACKGROUND
-
-		ConsoleWriter & writer{ Console::getInstance().writer() };
-		ConsoleImage & Background{ writer.createImage("Background") };
-
-		PrintBackground printbG;
-		printbG.setInstructions(Background);
-
-		writer.push("Background");
-		///////////////////////////////////////////////////////
-
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-
-		reader.read(keyEvents);  //vecteur de keyEvents
-		for (auto event : keyEvents) {
-
-			switch (event.keyA())
-			{
-			case 'esc': return INDEX_OPTIONS;  break;
-			}
-		}
-
-		return INDEX_INSTRUCTIONS;
-	}
-
-	int options(Console& console, StateMachine& machine)
-	{
-
-		////////////////////////////////////////////////////////
-		//FONCTION PRINTBACKGROUND
-
-		ConsoleWriter & writer{ Console::getInstance().writer() };
-		ConsoleImage & Background{ writer.createImage("Background") };
-
-		PrintBackground printbG;
-		printbG.setOptions(Background);
-
-		writer.push("Background");
-		///////////////////////////////////////////////////////
-
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-
-
-		reader.read(keyEvents);  //vecteur de keyEvents
-		for (auto event : keyEvents) {
-
-			switch (event.keyA())
-			{
-			case 'esc': return INDEX_WELCOME;  break;
-
-			case 'i': return INDEX_INSTRUCTIONS; break;
-			}
-		}
-		return INDEX_OPTIONS;
-	}
-
-	StateMachine::StateMachine()
-	{
-		mStates.push_back(State(exit));
-		mStates.push_back(State(welcome));
-		mStates.push_back(State(start));
-		mStates.push_back(State(onGame));
-		mStates.push_back(State(gameOver));
-		mStates.push_back(State(pause));
-		mStates.push_back(State(quit));
-		mStates.push_back(State(instructions));
-		mStates.push_back(State(options));
-	}
-
-
-	State& StateMachine::getState(int index)
-	{
-		return mStates[index];
-	}
-
-	void StateMachine::run(Console& console)
-	{
-		int currentStateIndex = INDEX_WELCOME;
-		while (currentStateIndex != INDEX_EXIT)
+		switch (event.keyV())
 		{
-			State& currentState = mStates[currentStateIndex];
-			currentStateIndex = currentState.execute(console, *this);
+		case 'q': return INDEX_QUIT;   break;
+		case 'Q': return INDEX_QUIT;   break;
+		
 		}
 	}
+
+
+	while (1) {
+		
+		for (char button = 0; button < 256; button++) {
+			if (GetAsyncKeyState(button) & 0x8000) {
+				return INDEX_WELCOME;
+			}
+		}
+		return INDEX_QUIT;
+	}
+
+
+
+
+
+	//if (GetAsyncKeyState(any_key))
+	//{
+
+	//	return INDEX_PAUSE;
+	//}
+	return INDEX_QUIT;
+}
+
+int pause(Console& console, StateMachine& machine)
+{
+	////////////////////////////////////////////////////////
+	//FONCTION PRINTBACKGROUND
+
+	ConsoleWriter & writer{ Console::getInstance().writer() };
+	ConsoleImage & Background{ writer.createImage("Background") };
+
+	PrintBackground printbG;
+	printbG.setPause(Background);
+
+	writer.push("Background");
+	///////////////////////////////////////////////////////
+
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+
+	reader.read(keyEvents);  //vecteur de keyEvents
+	for (auto event : keyEvents) {
+
+		switch (event.keyA())
+		{
+		case 'e': return INDEX_WELCOME;  break;
+		case 'E': return INDEX_WELCOME;  break;
+		case 'Q': return INDEX_QUIT;  break;
+		case 'q': return INDEX_QUIT;  break;
+
+		}
+	}
+	return INDEX_PAUSE;
+}
+
+int quit(Console& console, StateMachine& machine)
+{
+	////////////////////////////////////////////////////////
+	//FONCTION PRINTBACKGROUND
+
+	ConsoleWriter & writer{ Console::getInstance().writer() };
+	ConsoleImage & Background{ writer.createImage("Background") };
+
+	PrintBackground printbG;
+	printbG.setGameOver(Background);
+
+	writer.push("Background");
+	///////////////////////////////////////////////////////
+
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+	reader.read(keyEvents);  //vecteur de keyEvents
+	
+	for (auto event : keyEvents) {
+
+		switch (event.keyA())
+		{
+		case 'y': return INDEX_EXIT;;  break;
+		case 'Y': return INDEX_EXIT;;  break;
+		}
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+
+			return INDEX_WELCOME;
+		}
+	}
+	return INDEX_QUIT;
+}
+
+int instructions(Console& console, StateMachine& machine)
+{
+
+	////////////////////////////////////////////////////////
+	//FONCTION PRINTBACKGROUND
+
+	ConsoleWriter & writer{ Console::getInstance().writer() };
+	ConsoleImage & Background{ writer.createImage("Background") };
+
+	PrintBackground printbG;
+	printbG.setInstructions(Background);
+
+	writer.push("Background");
+	///////////////////////////////////////////////////////
+
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+
+	reader.read(keyEvents);  //vecteur de keyEvents
+	for (auto event : keyEvents) {
+
+		switch (event.keyA())
+		{
+		case 'O': return INDEX_OPTIONS;  break;
+		case 'o': return INDEX_OPTIONS;  break;
+
+		}
+		
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+
+			return INDEX_OPTIONS;
+		}
+	}
+
+	return INDEX_INSTRUCTIONS;
+}
+
+int options(Console& console, StateMachine& machine)
+{
+
+	////////////////////////////////////////////////////////
+	//FONCTION PRINTBACKGROUND
+
+	ConsoleWriter & writer{ Console::getInstance().writer() };
+	ConsoleImage & Background{ writer.createImage("Background") };
+
+	PrintBackground printbG;
+	printbG.setOptions(Background);
+
+	writer.push("Background");
+	///////////////////////////////////////////////////////
+
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+
+
+	reader.read(keyEvents);  //vecteur de keyEvents
+	for (auto event : keyEvents) {
+
+		switch (event.keyA())
+		{
+		case 'I': return INDEX_INSTRUCTIONS; break;
+		case 'i': return INDEX_INSTRUCTIONS; break;
+
+		}
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+
+			return INDEX_WELCOME;
+		}
+	}
+	return INDEX_OPTIONS;
+}
+
+StateMachine::StateMachine()
+{
+	mStates.push_back(State(exit));
+	mStates.push_back(State(welcome));
+	mStates.push_back(State(start));
+	mStates.push_back(State(onGame));
+	mStates.push_back(State(gameOver));
+	mStates.push_back(State(pause));
+	mStates.push_back(State(quit));
+	mStates.push_back(State(instructions));
+	mStates.push_back(State(options));
+}
+
+
+State& StateMachine::getState(int index)
+{
+	return mStates[index];
+}
+
+void StateMachine::run(Console& console)
+{
+	int currentStateIndex = INDEX_WELCOME;
+	while (currentStateIndex != INDEX_EXIT)
+	{
+		State& currentState = mStates[currentStateIndex];
+		currentStateIndex = currentState.execute(console, *this);
+	}
+}
