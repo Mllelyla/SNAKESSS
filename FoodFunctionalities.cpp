@@ -3,11 +3,9 @@
 #include "Snake.h"
 #include "Food.h"
 #include "PrintBackground.h"
-#include <stdlib.h>
 
 FoodFunctionalities::FoodFunctionalities()
 	: mFoodEaten{nullptr},
-	//mFoodEaten{},
 	mTypeFoodTouched{""},
 	mPointsFoodTouched{}
 {

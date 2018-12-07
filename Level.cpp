@@ -1,33 +1,30 @@
 #include "Level.h"
 #include "Snake.h"
-
-
+#include "math.h"
 
 Level::Level(int number)//int number
-	: mNumber{ number }, 
-	mMsBetweenMovement{ calcMsBetweenMovement()}
+	: mNumber{ number },
+	mMsBetweenMovement{ calcMsBetweenMovement() }
 {
 }
 
 int Level::levelNumber() { return mNumber; }
 void Level::setlevelNumber(int niveau) { mNumber = niveau; }
 
-
-void Level::MsBetweenMovementMultiplier(int speedMultiplier) { mMsBetweenMovement *= speedMultiplier; } //setter custom
-
-int Level::updateMsBetweenMovement() 
+float Level::updateMsBetweenMovement()
 {
 	mMsBetweenMovement = calcMsBetweenMovement();
 	return mMsBetweenMovement;
 }
 
-int Level::getMsBetweenMovement() //getter
+float Level::getMsBetweenMovement() //getter
 {
 	return mMsBetweenMovement;
 }
 
-int Level::calcMsBetweenMovement()
+float Level::calcMsBetweenMovement()
 {
-	return 200 - (40*(mNumber-1));
+	return 150 - pow(.9, mNumber);
+	//return 200 - (40 * (mNumber - 1));
 }
 

@@ -11,7 +11,7 @@
 #include "PrintImage.h"
 #include "ElapsedTimer.h"
 #include "PrintBackground.h"
-#include <windows.h > //tests beeps sonores :p
+#include <windows.h > 
 
 
 using namespace std;
@@ -30,16 +30,13 @@ const int INDEX_OPTIONS = 8;
 int welcome(Console& console, StateMachine& machine)
 {
 
-	////////////////////////////////////////////////////////
 	//FONCTION PRINTBACKGROUND
-
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
 	PrintBackground printbG;
 	printbG.setWelcome(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
@@ -71,27 +68,27 @@ int start(Console& console, StateMachine& machine)
 
 int onGame(Console& console, StateMachine& machine)
 {
-	//initialisation des instances d'objets  ...a faire dans Game ?
-	Direction leMod;
-	leMod.setRight(); //direction par defaut au debut
+	//initialisation des instances d'objets  
+	Direction theDirection;
+	theDirection.setRight(); //direction par defaut au debut
 	Snake theSnake;
+	ElapsedTimer <> leTimer;
 	FoodFunctionalities foodFunctions;
 	Food theFood, theFood2;
 	PrintImage printImage;
-	ElapsedTimer<> leTimer;
 	PrintBackground printbG;
 	Game currentGame;
 	int score;
 	int currentlevel;
+	int freezeCountDown;
 
 	bool started = false;
-	int currentSlice{};
+	//int currentSlice{};
+	leTimer.start();
 	currentGame.setCurrentLevel(1);  // + que les niveaux avancent, plus le serpent va vite
-
-	int levelTimeUpdateInMs = currentGame.CurrentLevel().calcMsBetweenMovement();
+	float levelTimeUpdateInMs = currentGame.CurrentLevel().calcMsBetweenMovement();
 
 	bool gameEnd = false;
-	leTimer.start();
 	started = true;
 
 	theSnake.newSnake(ConsoleColor::tc, char(219), Position(30, 30), 4); //position de depart 
@@ -100,7 +97,7 @@ int onGame(Console& console, StateMachine& machine)
 	theFood.setPosition(foodFunctions.newRandomFoodPosition(theSnake)); //random position Food1 relative a la position du snake
 	theFood2.setPosition(foodFunctions.newRandomFoodPosition(theSnake)); //random position Food2 relative a la position du snake
 
-	////////////////////////////////////////////////////////
+																		 
 	//BACKGROUND 
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
@@ -110,52 +107,51 @@ int onGame(Console& console, StateMachine& machine)
 	writer.push("Background");
 
 	ConsoleImage &Image{ writer.createImage("Image") };  //creation d'une image vide
-	/////////////////////////////////////////////////////////
+													
+	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
+	ConsoleKeyReader::KeyEvents keyEvents;
+	reader.installFilter(new ConsoleKeyFilterUp);
+
 	while (!gameEnd)
 	{
-		//updates score/level
-		score = currentGame.getScore();
-		currentlevel = currentGame.CurrentLevel().levelNumber();
+		//si le snake est empoisonné, tu peux pas utiliser les commandes !!!!
 
-		//regarde si on doit augmenter la vitesse : si on change de niveau ou si le serpent est empoisonné ( augmente vitesse temporairement)
-		//currentGame.setSpeedSnake(theSnake);
-		levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
+		if (!currentGame.getSnakePoisonFreeze()) {
+			reader.read(keyEvents);
+			for (auto event : keyEvents) {
+				switch (event.keyV()){
+					case 'W': if (!(theDirection.isDown())) { theDirection.setUp(); } break;
+					case 'w': if (!(theDirection.isDown())) { theDirection.setUp(); } break;
+					case 'A': if (!(theDirection.isRight())) { theDirection.setLeft(); } break;
+					case 'a': if (!(theDirection.isRight())) { theDirection.setLeft(); } break;
+					case 'S': if (!(theDirection.isUp())) { theDirection.setDown(); } break;
+					case 's': if (!(theDirection.isUp())) { theDirection.setDown(); } break;
+					case 'D': if (!(theDirection.isLeft())) { theDirection.setRight(); } break;
+					case 'd': if (!(theDirection.isLeft())) { theDirection.setRight(); } break;
+				}
+					if (GetAsyncKeyState(VK_ESCAPE))
+						return INDEX_PAUSE;
+			}
 
+
+		}
 		//print background + nouvelles Images
 		writer.push("Background", "Image"); //met le background dans l'image vide / ecrase l'image si elle existe deja
 		printImage.drawAll(theSnake, theFood, theFood2, Image); //rajoute le visuel de tes objets sur l'image
-		printImage.drawStats(theSnake, score, currentlevel, Image); //visuel du score/level
+		printImage.drawStats(theSnake, score, currentlevel, freezeCountDown, Image); //visuel du score/level
 		writer.push("Image"); //affiche nouvelle image + background
 
-		ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
-		ConsoleKeyReader::KeyEvents keyEvents;
-		reader.installFilter(new ConsoleKeyFilterUp);
-		reader.read(keyEvents);
-		for (auto event : keyEvents)
+
+		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentGame.getCurrentSlice())
 		{
-			switch (event.keyV())
-			{
-			case 'W': leMod.setUp();    break;
-			case 'w': leMod.setUp();    break;
-			case 'A': leMod.setLeft();  break;
-			case 'a': leMod.setLeft();  break;
-			case 'S': leMod.setDown();  break;
-			case 's': leMod.setDown();  break;
-			case 'D': leMod.setRight(); break;
-			case 'd': leMod.setRight(); break;
-			}
-			if (GetAsyncKeyState(VK_ESCAPE))
-			{
+			//updates score/level
+			score = currentGame.getScore();
+			currentlevel = currentGame.CurrentLevel().levelNumber();
+			freezeCountDown = currentGame.getFreezeCountDown();
 
-				return INDEX_PAUSE;
-			}
-		}
-
-
-		if ((leTimer.elapsedSeconds() * 1000 / levelTimeUpdateInMs) > currentSlice) //test Pause
-		{
 			gameEnd = theSnake.isDead();
-			theSnake.addToHead(leMod); //mouvement du serpent
+
+			theSnake.addToHead(theDirection); //mouvement du serpent
 
 			if (!foodFunctions.snakeTouchingFood(theSnake, theFood, theFood2)) {
 				theSnake.removeFromTail();
@@ -165,19 +161,26 @@ int onGame(Console& console, StateMachine& machine)
 				foodFunctions.snakeEatFood(theSnake, (*foodTouched));
 				currentGame.addScore(foodFunctions.pointsByTypeFood());
 				Beep(880, 100);  //SON !!
-				currentGame.changeLevel();
 			}
-			++currentSlice; //Changer pour des slices, et la slice est définie par le niveau
+
+			currentGame.setFreezeSnakePoison(theSnake); //regarde si le serpent doit freezer pcq empoisonné
+
+			levelTimeUpdateInMs = currentGame.CurrentLevel().updateMsBetweenMovement();
+
+			currentGame.changeLevel();
+
+			if (currentGame.resetTime()) //si empoisonné ou change de niveau
+				leTimer.restart();
 		}
 	}
+	
 	return INDEX_GAMEOVER;
 }
 
 int gameOver(Console& console, StateMachine& machine)
 {
-	////////////////////////////////////////////////////////
+	
 	//FONCTION PRINTBACKGROUND
-
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
 
@@ -185,7 +188,7 @@ int gameOver(Console& console, StateMachine& machine)
 	printbG.setGameOver(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
+
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
 	reader.installFilter(new ConsoleKeyFilterUp);
@@ -196,13 +199,13 @@ int gameOver(Console& console, StateMachine& machine)
 		{
 		case 'q': return INDEX_QUIT;   break;
 		case 'Q': return INDEX_QUIT;   break;
-		
+
 		}
 	}
 
 
 	while (1) {
-		
+
 		for (char button = 0; button < 256; button++) {
 			if (GetAsyncKeyState(button) & 0x8000) {
 				return INDEX_WELCOME;
@@ -211,23 +214,13 @@ int gameOver(Console& console, StateMachine& machine)
 		return INDEX_QUIT;
 	}
 
-
-
-
-
-	//if (GetAsyncKeyState(any_key))
-	//{
-
-	//	return INDEX_PAUSE;
-	//}
 	return INDEX_QUIT;
 }
 
 int pause(Console& console, StateMachine& machine)
 {
-	////////////////////////////////////////////////////////
+	
 	//FONCTION PRINTBACKGROUND
-
 	ConsoleWriter & writer{ Console::getInstance().writer() };
 	ConsoleImage & Background{ writer.createImage("Background") };
 
@@ -235,7 +228,7 @@ int pause(Console& console, StateMachine& machine)
 	printbG.setPause(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
+	
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
@@ -249,6 +242,8 @@ int pause(Console& console, StateMachine& machine)
 		case 'E': return INDEX_WELCOME;  break;
 		case 'Q': return INDEX_QUIT;  break;
 		case 'q': return INDEX_QUIT;  break;
+		case 'G': return INDEX_ONGAME;  break;
+		case 'g': return INDEX_ONGAME;  break;
 
 		}
 	}
@@ -257,7 +252,7 @@ int pause(Console& console, StateMachine& machine)
 
 int quit(Console& console, StateMachine& machine)
 {
-	////////////////////////////////////////////////////////
+	
 	//FONCTION PRINTBACKGROUND
 
 	ConsoleWriter & writer{ Console::getInstance().writer() };
@@ -267,12 +262,12 @@ int quit(Console& console, StateMachine& machine)
 	printbG.setGameOver(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
+	
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
 	reader.read(keyEvents);  //vecteur de keyEvents
-	
+
 	for (auto event : keyEvents) {
 
 		switch (event.keyA())
@@ -286,13 +281,13 @@ int quit(Console& console, StateMachine& machine)
 			return INDEX_WELCOME;
 		}
 	}
-	return INDEX_QUIT;
+	return INDEX_EXIT;
 }
 
 int instructions(Console& console, StateMachine& machine)
 {
 
-	////////////////////////////////////////////////////////
+	
 	//FONCTION PRINTBACKGROUND
 
 	ConsoleWriter & writer{ Console::getInstance().writer() };
@@ -302,7 +297,7 @@ int instructions(Console& console, StateMachine& machine)
 	printbG.setInstructions(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
+	
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;
@@ -316,7 +311,7 @@ int instructions(Console& console, StateMachine& machine)
 		case 'o': return INDEX_OPTIONS;  break;
 
 		}
-		
+
 		if (GetAsyncKeyState(VK_ESCAPE))
 		{
 
@@ -330,7 +325,7 @@ int instructions(Console& console, StateMachine& machine)
 int options(Console& console, StateMachine& machine)
 {
 
-	////////////////////////////////////////////////////////
+	
 	//FONCTION PRINTBACKGROUND
 
 	ConsoleWriter & writer{ Console::getInstance().writer() };
@@ -340,7 +335,7 @@ int options(Console& console, StateMachine& machine)
 	printbG.setOptions(Background);
 
 	writer.push("Background");
-	///////////////////////////////////////////////////////
+
 
 	ConsoleKeyReader & reader{ Console::getInstance().keyReader() };
 	ConsoleKeyReader::KeyEvents keyEvents;

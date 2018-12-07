@@ -26,19 +26,9 @@ S:::::::::::::::SS n::::n    n::::n a::::::::::aa:::ak::::::k   k:::::kee:::::::
 
 
 
-#include "Modifier.h"
-#include "Snake.h"
-#include "Food.h"
+
 #include "Console.h"
-#include "ConsoleKeyFilterUp.h"
-#include "PrintImage.h"
 #include "StateMachine.h"
-#include <iostream>
-#include <conio.h>
-#include <stdlib.h>
-#include "ElapsedTimer.h"
-//faudrait mettre les #include dans un autre fichier
-using namespace std;
 
 
 int main()

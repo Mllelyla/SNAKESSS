@@ -3,15 +3,14 @@ class Level
 {
 public:
 	Level(int number);
-	int updateMsBetweenMovement();
-	int calcMsBetweenMovement();
+	float updateMsBetweenMovement();
+	float calcMsBetweenMovement();
 	int levelNumber();
 	void setlevelNumber(int niveau);
-	void MsBetweenMovementMultiplier(int ms);
-	int getMsBetweenMovement();
+	float getMsBetweenMovement();
 
 private:
-	int mMsBetweenMovement;
+	float mMsBetweenMovement;
 	int mNumber;
 
 };

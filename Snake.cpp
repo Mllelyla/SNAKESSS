@@ -35,19 +35,16 @@ void Snake::setSnakePoisoned(bool poisoned) {
 	mSnakePoisoned= poisoned;
 }
 
-
-
 void Snake::newSnake(ConsoleColor color, char symbol, Position position, int length)
 {
 	//initialiser les parametres 
-
 	mColor = color;
 	mSymbol = symbol;
 
 	//vider vecteur si pas vide
 	if (mSnakeBody.size() != 0)
 	{
-		mSnakeBody.clear(); //clear vector
+		mSnakeBody.clear(); 
 	}
 
 	//init les premiers points dans le vecteur / pour longueur de serpent x
@@ -57,7 +54,6 @@ void Snake::newSnake(ConsoleColor color, char symbol, Position position, int len
 	for (unsigned i = 0; i < length; i++) {
 		pos.setCoords(position.x() - i, position.y());
 		mSnakeBody.insert(mSnakeBody.begin(), pos);
-		//mSnakeBody.push_back(pos);
 	}
 
 }
@@ -69,19 +65,16 @@ void Snake::addToHead(Direction direction)
 	Position currentHead{ mSnakeBody[mSnakeBody.size() - 1] };    // garder en memoire la tete actuelle
 	Position newHead{};
 
-
-	newHead.setCoords(currentHead.x() + direction.DirectionX(), currentHead.y() + direction.DirectionY()); //nouvelle position de tete avec Directionficateur
-
-																							 //mSnakeBody.insert(mSnakeBody.end(), newHead); 
-																							 //mSnakeBody.push_back(newHead); //nouvelle tete a la fin du vecteur
+	newHead.setCoords(currentHead.x() + direction.DirectionX(), currentHead.y() + direction.DirectionY()); 
+																																													
 	mSnakeBody.insert(mSnakeBody.end(), newHead);
-	mCurrentHeadPos.setCoords(newHead.x(), newHead.y());//changer pour un setter
+	mCurrentHeadPos.setCoords(newHead.x(), newHead.y());
 }
 
 void Snake::removeFromTail()
 {
-	mSnakeBody.erase(mSnakeBody.begin());  //
-										   //enleve debut du vecteur (la queue du serpent) pour simuler le mouvement
+	mSnakeBody.erase(mSnakeBody.begin()); 
+										  
 }
 
 bool Snake::outOfBounds()
@@ -91,11 +84,11 @@ bool Snake::outOfBounds()
 	int headX = currentHeadPos().x();
 	int headY = currentHeadPos().y();
 
-	size_t limitX = pbg.gameX() + pbg.gameWidth() - 2;
-	size_t limitY = pbg.gameY() + pbg.gameHeight() - 2;
+	size_t limitX = pbg.gameX() + pbg.gameWidth() - 3;
+	size_t limitY = pbg.gameY() + pbg.gameHeight() - 3;
 
 
-	if (headX > limitX || headY > limitY || headX < pbg.gameX() || headY < pbg.gameY())
+	if (headX > limitX || headY > limitY || headX < pbg.gameX()+2 || headY < pbg.gameY()+2)
 	{
 		return true;
 	}
@@ -122,11 +115,9 @@ bool Snake::isDead()
 {
 	if (outOfBounds() || touchesItself())
 		return true;
-	//Jeu fini, ajouter une touche custom liée à la fin du jeu (char) Ajouter une nouvelle fonction qui prend la valeur de retourne de celle-ci
 	return false;
 }
 
 
-//sil mange une pomme, tu fais juste PAS removeFromTail()
 
 

@@ -44,10 +44,9 @@ void PrintBackground::setOnGame(ConsoleImage &Background, Food theFood, Food the
 	Background.drawPoint(size_t(2), size_t(20), theFood.symbol(), theFood.color());
 	Background.drawText(size_t(4), size_t(20), "= 1 points", ConsoleColor::ty);
 	Background.drawPoint(size_t(2), size_t(25), theFood2.symbol(), theFood2.color());
-	Background.drawText(size_t(4), size_t(25), " = 3 points ", ConsoleColor::ty);
-	Background.drawText(size_t(4), size_t(28), "   + POISON ", ConsoleColor::ty);
-	Background.drawText(size_t(1), size_t(30), "", ConsoleColor::ty);
-	Background.drawText(size_t(1), size_t(32), "", ConsoleColor::ty);
+	Background.drawText(size_t(4), size_t(25), " = 3 points & POISON", ConsoleColor::ty);
+	Background.drawText(size_t(1), size_t(28), "POISON = INPUTS", ConsoleColor::ty);
+	Background.drawText(size_t(1), size_t(30), "TEMPORARY FROZEN", ConsoleColor::ty);
 
 	//draw Ctlr info
 	Background.drawText(size_t(55), size_t(20), "UP = W ", ConsoleColor::ty);
@@ -85,11 +84,17 @@ void PrintBackground::setOptions(ConsoleImage &Background)
 void PrintBackground::setInstructions(ConsoleImage &Background)
 {
 	PrintBackground::set(Background, "      ~ INSTRUCTIONS ~");
-	Background.drawText(size_t(32), size_t(17), "W : UP", ConsoleColor::ty);
-	Background.drawText(size_t(32), size_t(41), "A : LEFT", ConsoleColor::ty);
-	Background.drawText(size_t(33), size_t(29), "SNAKE!", ConsoleColor::ty);
-	Background.drawText(size_t(12), size_t(29), "A : LEFT", ConsoleColor::ty);
-	Background.drawText(size_t(52), size_t(29), "D : RIGHT", ConsoleColor::ty);
+
+
+	Background.drawText(size_t(12), size_t(10), " * FOOD = POINTS", ConsoleColor::ty);
+	Background.drawText(size_t(12), size_t(12), " * THE SNAKE GOES FASTER WITH THE LEVELS", ConsoleColor::ty);
+	Background.drawText(size_t(12), size_t(14), " * THE POISONED FOOD GIVE YOU MORE POINTS BUT", ConsoleColor::ty);
+	Background.drawText(size_t(12), size_t(16), "   YOU CAN'T USE THE INPUTS FOR A SHORT TIME", ConsoleColor::ty);
+	Background.drawText(size_t(32), size_t(20), "W : UP", ConsoleColor::ty);
+	Background.drawText(size_t(32), size_t(44), "A : LEFT", ConsoleColor::ty);
+	Background.drawText(size_t(33), size_t(32), "SNAKE!", ConsoleColor::ty);
+	Background.drawText(size_t(12), size_t(32), "A : LEFT", ConsoleColor::ty);
+	Background.drawText(size_t(52), size_t(32), "D : RIGHT", ConsoleColor::ty);
 	Background.drawText(size_t(56), size_t(5), "O : OPTIONS", ConsoleColor::ty);
 
 
@@ -97,9 +102,14 @@ void PrintBackground::setInstructions(ConsoleImage &Background)
 
 void PrintBackground::setPause(ConsoleImage &Background)
 {
-	PrintBackground::set(Background,"         ~ PAUSE ~");
+	std::string snakesAscii = " " ;
+
+	PrintBackground::set(Background, "         ~ PAUSE ~");
 	Background.drawText(size_t(20), size_t(20), "Q = QUIT THE GAME", ConsoleColor::ty);
-	Background.drawText(size_t(20), size_t(27), "E = WELCOME MENU", ConsoleColor::ty);
+	Background.drawText(size_t(20), size_t(23), "G = BACK TO THE GAME", ConsoleColor::ty);
+	Background.drawText(size_t(20), size_t(26), "E = WELCOME MENU", ConsoleColor::ty);
+	Background.drawText(size_t(20), size_t(30), "                   oo ", ConsoleColor::ty);
+	Background.drawText(size_t(20), size_t(31), " . ..__ / \_ / \_ / `' ", ConsoleColor::ty);
 
 
 }
@@ -107,9 +117,8 @@ void PrintBackground::setGameOver(ConsoleImage &Background)
 {
 	PrintBackground::set(Background, "        ~ GAMEOVER ~");
 	Background.drawText(size_t(20), size_t(20), "THANKS FOR PLAYING !", ConsoleColor::ty);
-	Background.drawText(size_t(30), size_t(30), "W = WELCOME MENU", ConsoleColor::ty);
-	Background.drawText(size_t(40), size_t(40), "Q = QUIT THE GAME", ConsoleColor::ty);
-
+	Background.drawText(size_t(20), size_t(23), "W = WELCOME MENU", ConsoleColor::ty);
+	Background.drawText(size_t(20), size_t(26), "Q = QUIT THE GAME", ConsoleColor::ty);
 
 }
 void PrintBackground::setQuit(ConsoleImage &Background)

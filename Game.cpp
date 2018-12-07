@@ -4,14 +4,23 @@
 Game::Game()
 	: mCurrentLevel{ Level::Level(1) },
 	mStarted{ false },
-	mScore{ 0 }
-	//mSnakePoisonSpeed {false}
-
+	mScore{ 0 },
+	mResetTime{ false },
+	mCurrentSlice{},
+	mSnakePoisonFreeze{ false },
+	mFreezePoisonSlice{},
+	mFreezeCountDown{ 10 }
 {
 }
 
 int Game::getScore() { return mScore; }
-void Game::addScore(int points) { mScore+=points; }
+void Game::addScore(int points) { mScore += points; }
+int Game::getCurrentSlice() { return mCurrentSlice; }
+int Game::getFreezePoisonSlice() { return mFreezePoisonSlice; }
+bool Game::resetTime() { return mResetTime; }
+bool Game::getSnakePoisonFreeze() { return mSnakePoisonFreeze; }
+int Game::getFreezeCountDown() { return mFreezeCountDown; }
+
 
 Level Game::CurrentLevel() //getter de niveau
 {
@@ -20,32 +29,45 @@ Level Game::CurrentLevel() //getter de niveau
 
 void Game::setCurrentLevel(int niveau) //setter de niveau
 {
-	mCurrentLevel.setlevelNumber(niveau) ;
+	mCurrentLevel.setlevelNumber(niveau);
 }
-void Game::changeLevel() 
+void Game::changeLevel()
 {
 	//tests : each 10 points, switch level 
-	int lvl = mScore / 10;
-	setCurrentLevel(lvl+1);
-
-	/*
-	if (mScore != 0 && mScore % 10 == 0) {
-
-		setCurrentLevel(mCurrentLevel.levelNumber()+1);
+	int lvl = mScore / 5;
+	if (lvl + 1 != mCurrentLevel.levelNumber())
+	{
+		setCurrentLevel(lvl + 1);
+		mCurrentSlice = 0;
+		mResetTime = true;
 	}
-	*/
+	else {
+		mResetTime = false;
+		mCurrentSlice++;
+	}
 }
 
-/*
-void Game::setSpeedSnake(Snake &theSnake) {
-	//test avec vitesse du serpent pour quand empoisonné
-	if (theSnake.snakePoisoned() && !mSnakePoisonSpeed){
-		mCurrentLevel.MsBetweenMovementMultiplier(theSnake.speed()*0.005);
-		mSnakePoisonSpeed = true;
+
+void Game::setFreezeSnakePoison(Snake &theSnake) {
+	//freeze les inputs quand empoisonné
+	if (theSnake.snakePoisoned() && !mSnakePoisonFreeze) {
+		mSnakePoisonFreeze = true;
 	}
 	else if (!theSnake.snakePoisoned())
-		mSnakePoisonSpeed = false;
+		mSnakePoisonFreeze = false;
+
+	if (mSnakePoisonFreeze && mFreezePoisonSlice < 10) {
+		mFreezeCountDown--;
+		mFreezePoisonSlice++;
+	}
+	else {
+		mFreezePoisonSlice = 0;
+		mFreezeCountDown = 10;
+		theSnake.setSnakePoisoned(false);
+	}
+
 }
-*/
+
+
 
 

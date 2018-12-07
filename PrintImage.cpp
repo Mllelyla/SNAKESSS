@@ -47,21 +47,19 @@ void PrintImage::drawFood(Food theFood,ConsoleImage &Image)
 	Image.drawPoint(size_t(theFood.position().x()), size_t(theFood.position().y()), theFood.symbol(), theFood.color());
 }
 
-void PrintImage::drawStats( Snake &snake, int &score, int &currentlevel, ConsoleImage &Image ) {
+void PrintImage::drawStats(Snake &snake, int &score, int &currentlevel, int &freezeCountDown, ConsoleImage &Image) {
 	std::string snakestate;
 	//score related text
-	Image.drawText(size_t(19), size_t(9), "SCORE TOTAL = "+std::to_string(score), ConsoleColor::ty);
+	Image.drawText(size_t(19), size_t(9), "SCORE TOTAL = " + std::to_string(score), ConsoleColor::ty);
 
 	//level related text
-	Image.drawText(size_t(40), size_t(9), "LEVEL = "+std::to_string(currentlevel), ConsoleColor::ty);
+	Image.drawText(size_t(40), size_t(9), "LEVEL = " + std::to_string(currentlevel), ConsoleColor::ty);
 
 	//state snake
 	if (snake.snakePoisoned())
-		snakestate= "POISONED"; 
+		Image.drawText(size_t(19), size_t(11), "SNAKE STATE = POISONED  " + std::to_string(freezeCountDown), ConsoleColor::ty);
 	else
-		snakestate= "NORMAL"; 
-
-	Image.drawText(size_t(19), size_t(11), "SNAKE STATE = "+snakestate, ConsoleColor::ty);
+		Image.drawText(size_t(19), size_t(11), "SNAKE STATE = NORMAL", ConsoleColor::ty);
 
 }
 
